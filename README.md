@@ -1,7 +1,7 @@
-# Scanner OCR Lorcana 1.2
+# Scanner OCR Lorcana
 
 Ce projet permet de scanner le texte d’une carte Lorcana via votre webcam puis d’effectuer automatiquement une recherche sur Cardmarket.  
-Le script `scanner_ocr1.2.py` détecte la **Camo Virtual Camera** si elle est active et bascule sur l’anglais si le pack de langue français de Tesseract n’est pas disponible.
+Le script `scanner_ocr.py` détecte la **Camo Virtual Camera** si elle est active et bascule sur l’anglais si le pack de langue français de Tesseract n’est pas disponible.
 
 ## Prérequis
 
@@ -22,7 +22,7 @@ Le script `scanner_ocr1.2.py` détecte la **Camo Virtual Camera** si elle est ac
 
 1. Lancez votre webcam ou **Camo** puis exécutez :
    ```bash
-   python scanner_ocr1.2.py
+   python scanner_ocr.py
    ```
 
 2. Une fenêtre s’ouvre avec l’aperçu caméra.
@@ -42,7 +42,7 @@ Pour fermer proprement le programme, appuyez sur `Ctrl + C` dans le terminal.
 
 ### Citations
 
-- Définition du chemin Tesseract dans `scanner_ocr1.2.py` :
+- Définition du chemin Tesseract dans `scanner_ocr.py` :
   ```python
   TESS_PATH = r"C:\\Program Files\\Tesseract-OCR"
   os.environ["TESSDATA_PREFIX"] = os.path.join(TESS_PATH, "tessdata")
