@@ -19,8 +19,26 @@ pytesseract.pytesseract.tesseract_cmd = os.path.join(TESS_PATH, "tesseract.exe")
 
 # Recherche automatique de la caméra (Camo ou autre)
 def open_camera(max_index=5, backends=None):
+    """Cherche et ouvre une caméra.
+
+    Paramètres
+    ----------
+    max_index : int, optionnel
+        Nombre d'index à tester lors d'une recherche numérique.
+    backends : list[int] | None
+        Backends OpenCV utilisés pour créer les ``VideoCapture``.
+
+    Retourne
+    -------
+    tuple[cv2.VideoCapture | None, str | int | None, int | None]
+        L'objet capture ouvert (ou ``None``), l'identifiant de la source
+        et le backend utilisé.
+    """
+
     if backends is None:
         backends = [cv2.CAP_DSHOW, cv2.CAP_MSMF, cv2.CAP_ANY]
+
+    # On teste d'abord par nom
     names = ["video=Reincubate Camo", "video=Camo Virtual Camera", "video=Camo"]
     for name in names:
         for backend in backends:
@@ -29,6 +47,8 @@ def open_camera(max_index=5, backends=None):
                 print(f"🔍 Caméra trouvée name='{name}', backend={backend}")
                 return cap, name, backend
             cap.release()
+
+    # Sinon on parcourt les index numériques
     for idx in range(max_index):
         for backend in backends:
             cap = cv2.VideoCapture(idx, backend)
@@ -36,6 +56,8 @@ def open_camera(max_index=5, backends=None):
                 print(f"🔍 Caméra trouvée index={idx}, backend={backend}")
                 return cap, idx, backend
             cap.release()
+
+    # Aucune caméra trouvée
     return None, None, None
 
 cap, source, used_backend = open_camera()
@@ -65,8 +87,18 @@ drawing = False
 rotation_angle = 0
 
 def process_ocr():
+    """Effectue l'OCR sur la zone sélectionnée et lance la recherche.
+
+    La fonction capture un cliché de la caméra, découpe la région
+    choisie par l'utilisateur, la prépare pour l'OCR puis tente de lire
+    le texte en français puis en anglais. Si du texte est détecté, il
+    sert à construire l'URL de recherche Cardmarket ouverte dans le
+    navigateur par défaut.
+    """
+
     global selected_zone
     ocr_status.config(text="")
+    # Vérifie qu'une zone est sélectionnée
     if not selected_zone:
         ocr_status.config(text="❗ Aucune zone sélectionnée.")
         return
@@ -74,15 +106,18 @@ def process_ocr():
     x2, y2 = selected_zone[1]
     x1, x2 = sorted([x1, x2])
     y1, y2 = sorted([y1, y2])
+    # Capture une image
     ret, frame = cap.read()
     if not ret:
         ocr_status.config(text="⚠️ Impossible de lire la caméra.")
         return
+    # Applique la rotation choisie
     if rotation_angle == 90:
         frame = cv2.rotate(frame, cv2.ROTATE_90_CLOCKWISE)
     elif rotation_angle == 180:
         frame = cv2.rotate(frame, cv2.ROTATE_180)
     h, w = frame.shape[:2]
+    # Rapport entre la taille affichée et l'image réelle
     scale_x = w / canvas.winfo_width()
     scale_y = h / canvas.winfo_height()
     rx1, rx2 = int(x1 * scale_x), int(x2 * scale_x)
@@ -90,6 +125,7 @@ def process_ocr():
     if rx1 >= rx2 or ry1 >= ry2:
         ocr_status.config(text="❌ Zone invalide pour OCR.")
         return
+    # Préparation de l'image pour l'OCR
     roi = frame[ry1:ry2, rx1:rx2]
     gray = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
     clahe = cv2.createCLAHE(clipLimit=2.0, tileGridSize=(8, 8))
@@ -97,6 +133,7 @@ def process_ocr():
     gray = cv2.medianBlur(gray, 3)
     print("🔍 Taille de l'image OCR :", gray.shape)
     text = ""
+    # Essaye le français puis l'anglais
     for lang in ["fra", "eng"]:
         try:
             text = pytesseract.image_to_string(gray, lang=lang).strip()
@@ -115,17 +152,24 @@ def process_ocr():
     webbrowser.open(url)
 
 def rotate_cam():
+    """Fait pivoter l'image de la caméra par pas de 90°."""
+
     global rotation_angle
+    # Incrémente l'angle par pas de 90°
     rotation_angle = (rotation_angle + 90) % 360
     rotate_label.config(text=f"🔄 Rotation: {rotation_angle}°")
 
 def on_mouse_down(e):
+    """Démarre le tracé du rectangle au clic gauche."""
+
     global drawing, start_point, end_point
     drawing = True
     start_point = (e.x, e.y)
     end_point = start_point
 
 def on_mouse_up(e):
+    """Valide la zone à la relâche du bouton."""
+
     global drawing, selected_zone, end_point
     drawing = False
     end_point = (e.x, e.y)
@@ -133,25 +177,33 @@ def on_mouse_up(e):
     print(f"✅ Zone: {selected_zone}")
 
 def on_mouse_move(e):
+    """Met à jour le rectangle pendant le déplacement."""
+
     global end_point
     if drawing:
         end_point = (e.x, e.y)
 
 def update():
+    """Met à jour l'affichage avec la dernière image de la caméra."""
+
     ret, frame = cap.read()
     if ret:
+        # Applique la rotation en temps réel
         if rotation_angle == 90:
             frame = cv2.rotate(frame, cv2.ROTATE_90_CLOCKWISE)
         elif rotation_angle == 180:
             frame = cv2.rotate(frame, cv2.ROTATE_180)
         h, w = frame.shape[:2]
+        # Redimensionne l'image pour l'affichage
         nw, nh = canvas.winfo_width(), canvas.winfo_height()
         img = ImageTk.PhotoImage(Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)).resize((nw, nh)))
         canvas.imgtk = img
         canvas.create_image(0, 0, anchor=tk.NW, image=img)
         if start_point and end_point:
+            # Affiche le rectangle de sélection
             canvas.delete("rect")
             canvas.create_rectangle(*start_point, *end_point, outline="green", width=2, tags="rect")
+    # Boucle d'actualisation toutes les 30 ms
     root.after(30, update)
 
 tk.Button(frame_left, text="📸 Scanner (OCR)", command=process_ocr).pack(pady=10)
