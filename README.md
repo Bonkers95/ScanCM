@@ -1,22 +1,29 @@
-📘 GUIDE D'INSTALLATION ET D'UTILISATION DU SCANNER OCR DE CARTES LORCANA
+# Scanner OCR Lorcana 1.2
 
-🛠️ PRÉREQUIS
----------------------
-1. Python 3.8 ou supérieur installé : https://www.python.org/downloads/
-2. Modules Python à installer via terminal :
-   - pip install opencv-python
-   - pip install pytesseract
-   - pip install pillow
+Ce projet permet de scanner le texte d’une carte Lorcana via votre webcam puis d’effectuer automatiquement une recherche sur Cardmarket.  
+Le script `scanner_ocr1.2.py` détecte la **Camo Virtual Camera** si elle est active et bascule sur l’anglais si le pack de langue français de Tesseract n’est pas disponible.
 
-3. Tesseract OCR doit être installé (logiciel externe à Python) :
-   - Télécharger ici : https://github.com/tesseract-ocr/tesseract
-   - Sous Windows, ajouter son chemin (ex: C:\Program Files\Tesseract-OCR\tesseract.exe) dans les variables d’environnement OU ajouter dans le code Python :
-     pytesseract.pytesseract.tesseract_cmd = "CHEMIN_COMPLET\tesseract.exe"
+## Prérequis
 
-🎮 UTILISATION
----------------------
-1. Lancez le script `scanner_ocr.py` avec :
-   python scanner_ocr.py
+1. **Python 3.8 ou supérieur**  
+   Téléchargement : <https://www.python.org/downloads/>
+
+2. **Modules Python**  
+   ```bash
+   pip install opencv-python pytesseract pillow
+   ```
+
+3. **Tesseract OCR**  
+   - Téléchargez l’installateur depuis : <https://github.com/tesseract-ocr/tesseract>  
+   - Sous Windows, assurez-vous que `TESS_PATH` dans le script pointe bien vers le dossier d’installation (par défaut `C:\Program Files\Tesseract-OCR`).  
+   - Sous macOS/Linux, installez Tesseract via votre gestionnaire de paquets et adaptez `TESS_PATH` le cas échéant.
+
+## Utilisation
+
+1. Lancez votre webcam ou **Camo** puis exécutez :
+   ```bash
+   python scanner_ocr1.2.py
+   ```
 
 2. Une fenêtre s’ouvre avec l’aperçu caméra.
 
@@ -26,22 +33,33 @@
    - Cliquez sur le bouton "📸 Scanner (OCR)" ou faites un clic-droit sur l'image.
    - Le texte détecté sera recherché automatiquement sur Cardmarket.
 
-4. Vous pouvez tourner la caméra avec "🔁 Tourner caméra".
+4. Vous pouvez tourner la caméra avec **🔁 Tourner caméra** (par pas de 90°).
 5. Si votre caméra supporte la mise au point manuelle, un curseur apparaîtra.
 
-❓ POUR MODIFIER LE CODE
----------------------
-- Ouvrez `scanner_ocr.py` dans un éditeur de texte ou un IDE comme VS Code.
-- Vous pouvez modifier la logique d’OCR, le lien vers Cardmarket, l’apparence graphique, etc.
+Pour fermer proprement le programme, appuyez sur `Ctrl + C` dans le terminal.
 
-💬 POSER DES QUESTIONS À CHATGPT
----------------------
-- Connectez-vous sur https://chat.openai.com
-- Collez le code et demandez :
-  "Peux-tu m'expliquer comment ce script fonctionne ?"
-  ou
-  "Comment ajouter la détection automatique d'une carte entière ?"
+---
 
-📩 ASTUCE
----------------------
-- Utilisez `Ctrl + C` dans le terminal pour fermer le programme proprement.
+### Citations
+
+- Définition du chemin Tesseract dans `scanner_ocr1.2.py` :
+  ```python
+  TESS_PATH = r"C:\\Program Files\\Tesseract-OCR"
+  os.environ["TESSDATA_PREFIX"] = os.path.join(TESS_PATH, "tessdata")
+  pytesseract.pytesseract.tesseract_cmd = os.path.join(TESS_PATH, "tesseract.exe")
+  ```
+
+- Activation du mode « focus manuel » si la caméra le supporte :
+  ```python
+  focus_available = cap.set(cv2.CAP_PROP_AUTOFOCUS, 0) and cap.set(cv2.CAP_PROP_FOCUS, 30)
+  ```
+
+- Affichage de la zone de sélection et création du curseur de focus :
+  ```python
+  tk.Label(frame_left, text=("🎚️ Focus manuel" if focus_available else "❌ Focus non supporté")).pack(pady=5)
+  if focus_available:
+      def set_focus(v): cap.set(cv2.CAP_PROP_FOCUS, int(v))
+      slider = tk.Scale(frame_left, from_=0, to=255, orient=tk.HORIZONTAL, command=set_focus)
+      slider.set(30)
+      slider.pack(pady=5)
+  ```
