@@ -1,0 +1,47 @@
+📘 GUIDE D'INSTALLATION ET D'UTILISATION DU SCANNER OCR DE CARTES LORCANA
+
+🛠️ PRÉREQUIS
+---------------------
+1. Python 3.8 ou supérieur installé : https://www.python.org/downloads/
+2. Modules Python à installer via terminal :
+   - pip install opencv-python
+   - pip install pytesseract
+   - pip install pillow
+
+3. Tesseract OCR doit être installé (logiciel externe à Python) :
+   - Télécharger ici : https://github.com/tesseract-ocr/tesseract
+   - Sous Windows, ajouter son chemin (ex: C:\Program Files\Tesseract-OCR\tesseract.exe) dans les variables d’environnement OU ajouter dans le code Python :
+     pytesseract.pytesseract.tesseract_cmd = "CHEMIN_COMPLET\tesseract.exe"
+
+🎮 UTILISATION
+---------------------
+1. Lancez le script `scanner_ocr.py` avec :
+   python scanner_ocr.py
+
+2. Une fenêtre s’ouvre avec l’aperçu caméra.
+
+3. Pour scanner une carte :
+   - Cliquez-gauche et faites glisser pour dessiner un rectangle autour de la zone de texte.
+   - Relâchez la souris pour valider.
+   - Cliquez sur le bouton "📸 Scanner (OCR)" ou faites un clic-droit sur l'image.
+   - Le texte détecté sera recherché automatiquement sur Cardmarket.
+
+4. Vous pouvez tourner la caméra avec "🔁 Tourner caméra".
+5. Si votre caméra supporte la mise au point manuelle, un curseur apparaîtra.
+
+❓ POUR MODIFIER LE CODE
+---------------------
+- Ouvrez `scanner_ocr.py` dans un éditeur de texte ou un IDE comme VS Code.
+- Vous pouvez modifier la logique d’OCR, le lien vers Cardmarket, l’apparence graphique, etc.
+
+💬 POSER DES QUESTIONS À CHATGPT
+---------------------
+- Connectez-vous sur https://chat.openai.com
+- Collez le code et demandez :
+  "Peux-tu m'expliquer comment ce script fonctionne ?"
+  ou
+  "Comment ajouter la détection automatique d'une carte entière ?"
+
+📩 ASTUCE
+---------------------
+- Utilisez `Ctrl + C` dans le terminal pour fermer le programme proprement.
